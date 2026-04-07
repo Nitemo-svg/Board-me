@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WeekFlow — Planificateur</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">WeekFlow</span>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" title="Réduire">‹</button>
+    </div>
+
+    <!-- Vue selector -->
+    <nav class="nav-section">
+      <span class="nav-label">Vue</span>
+      <button class="nav-btn active" id="btnWeek" data-view="week">
+        <span class="nav-icon">⊞</span>
+        <span class="nav-text">Semaine complète</span>
+      </button>
+      <button class="nav-btn" id="btnDay" data-view="day">
+        <span class="nav-icon">◻</span>
+        <span class="nav-text">Aujourd'hui</span>
+      </button>
+    </nav>
+
+    <!-- Day selector (only in day view) -->
+    <div class="day-picker" id="dayPicker" style="display:none">
+      <span class="nav-label">Jour affiché</span>
+      <div class="day-pills">
+        <button class="day-pill" data-day="0">Dim</button>
+        <button class="day-pill active" data-day="1">Lun</button>
+        <button class="day-pill" data-day="2">Mar</button>
+        <button class="day-pill" data-day="3">Mer</button>
+        <button class="day-pill" data-day="4">Jeu</button>
+        <button class="day-pill" data-day="5">Ven</button>
+        <button class="day-pill" data-day="6">Sam</button>
+      </div>
+    </div>
+
+    <!-- Quick add -->
+    <div class="nav-section">
+      <span class="nav-label">Ajouter rapide</span>
+      <button class="quick-add-btn" id="quickAddBtn">
+        <span>+</span> Nouvelle tâche
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="sidebar-stats">
+      <div class="stat-item">
+        <span class="stat-num" id="statTotal">0</span>
+        <span class="stat-lbl">tâches</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" id="statDone">0</span>
+        <span class="stat-lbl">faites</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" id="statLeft">0</span>
+        <span class="stat-lbl">restantes</span>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="sidebar-bottom">
+      <button class="settings-btn" id="openSettings">⚙ Personnaliser</button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main" id="main">
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-toggle" id="topbarToggle">☰</button>
+        <h1 class="page-title" id="pageTitle">Ma semaine</h1>
+        <span class="date-badge" id="dateBadge"></span>
+      </div>
+      <div class="topbar-right">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-inner" id="progressBar"></div>
+        </div>
+        <span class="progress-label" id="progressLabel">0%</span>
+      </div>
+    </header>
+
+    <!-- Week view -->
+    <section class="view week-view" id="weekView">
+      <div class="week-grid" id="weekGrid"></div>
+    </section>
+
+    <!-- Day view -->
+    <section class="view day-view" id="dayView" style="display:none">
+      <div class="day-full" id="dayFull"></div>
+    </section>
+  </main>
+
+  <!-- Modal: Add/Edit Task -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Nouvelle tâche</h2>
+        <button class="modal-close" id="closeTaskModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Titre</label>
+          <input type="text" id="taskName" placeholder="Nom de la tâche…" maxlength="80" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Jour</label>
+            <select id="taskDay">
+              <option value="1">Lundi</option>
+              <option value="2">Mardi</option>
+              <option value="3">Mercredi</option>
+              <option value="4">Jeudi</option>
+              <option value="5">Vendredi</option>
+              <option value="6">Samedi</option>
+              <option value="0">Dimanche</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Heure</label>
+            <input type="time" id="taskTime" value="09:00" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Durée (min)</label>
+            <input type="number" id="taskDuration" value="30" min="5" max="480" step="5" />
+          </div>
+          <div class="form-group">
+            <label>Catégorie</label>
+            <select id="taskCategory">
+              <option value="perso">🏠 Perso</option>
+              <option value="etudes">📚 Études</option>
+              <option value="netimo">💼 Nétimo</option>
+              <option value="sport">🏃 Sport</option>
+              <option value="social">💬 Social</option>
+              <option value="sante">❤️ Santé</option>
+              <option value="loisir">🎮 Loisir</option>
+              <option value="autre">📌 Autre</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Note (optionnel)</label>
+          <textarea id="taskNote" placeholder="Détails, liens, rappels…" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Priorité</label>
+          <div class="priority-selector">
+            <button class="prio-btn" data-prio="low">🟢 Basse</button>
+            <button class="prio-btn active" data-prio="mid">🟡 Moyenne</button>
+            <button class="prio-btn" data-prio="high">🔴 Haute</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="deleteTaskBtn" style="display:none">Supprimer</button>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button class="btn-ghost" id="cancelTaskBtn">Annuler</button>
+          <button class="btn-primary" id="saveTaskBtn">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h2>Personnalisation</h2>
+        <button class="modal-close" id="closeSettings">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="settings-section">
+          <h3>Apparence</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Thème de couleur</label>
+              <div class="color-swatches" id="themeSwatches">
+                <button class="swatch active" data-theme="midnight" style="background:#0d1117" title="Midnight"></button>
+                <button class="swatch" data-theme="forest" style="background:#0a2e1a" title="Forêt"></button>
+                <button class="swatch" data-theme="ocean" style="background:#0a1628" title="Océan"></button>
+                <button class="swatch" data-theme="dusk" style="background:#1a0a2e" title="Crépuscule"></button>
+                <button class="swatch" data-theme="warm" style="background:#1a0d00" title="Chaleur"></button>
+                <button class="swatch" data-theme="light" style="background:#f5f0e8" title="Clair"></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Accent</label>
+              <div class="color-swatches" id="accentSwatches">
+                <button class="swatch accent-sw active" data-accent="cyan" style="background:#00e5ff" title="Cyan"></button>
+                <button class="swatch accent-sw" data-accent="lime" style="background:#b5ff5a" title="Lime"></button>
+                <button class="swatch accent-sw" data-accent="pink" style="background:#ff4da6" title="Rose"></button>
+                <button class="swatch accent-sw" data-accent="gold" style="background:#ffd166" title="Or"></button>
+                <button class="swatch accent-sw" data-accent="violet" style="background:#b57bee" title="Violet"></button>
+                <button class="swatch accent-sw" data-accent="orange" style="background:#ff7043" title="Orange"></button>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Police d'affichage</label>
+              <select id="fontSelect">
+                <option value="playfair">Playfair Display (défaut)</option>
+                <option value="mono">DM Mono</option>
+                <option value="sans">DM Sans</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Densité de l'interface</label>
+              <select id="densitySelect">
+                <option value="comfy">Confortable</option>
+                <option value="compact">Compact</option>
+                <option value="spacious">Aéré</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Semaine</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Début de la semaine</label>
+              <select id="weekStartSelect">
+                <option value="1">Lundi</option>
+                <option value="0">Dimanche</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Plage horaire affichée</label>
+              <select id="timeRangeSelect">
+                <option value="6-22">6h → 22h</option>
+                <option value="0-24">0h → 24h</option>
+                <option value="7-21">7h → 21h</option>
+                <option value="8-20">8h → 20h</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Mon prénom (affiché dans le header)</label>
+            <input type="text" id="userNameInput" placeholder="Victor" maxlength="30" />
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Catégories — couleurs personnalisées</h3>
+          <div class="cat-colors" id="catColors"></div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="resetDataBtn">Réinitialiser les tâches</button>
+        <button class="btn-primary" id="saveSettings" style="margin-left:auto">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
